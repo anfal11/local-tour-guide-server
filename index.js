@@ -40,6 +40,14 @@ async function run() {
       res.send(result);
     });
 
+    // single service by service name
+    app.get("/api/v1/services/:serviceName", async (req, res) => {
+        const serviceName = req.params.serviceName;
+        const query = { serviceName: serviceName };
+        const result = await servicesCollection.findOne(query);
+        res.send(result);
+    });
+
     // bookings
     app.post("/api/v1/user/create-bookings", async (req, res) => {
       const booking = req.body;
