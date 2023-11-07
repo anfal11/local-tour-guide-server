@@ -1,7 +1,8 @@
 const express = require("express");
+const cors = require("cors");
+require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
-const cors = require("cors");
 
 // parsers
 app.use(express.json());
@@ -37,6 +38,12 @@ async function run() {
     app.get("/api/v1/services", async (req, res) => {
       const cursor = servicesCollection.find();
       const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.post("/api/v1/services", async (req, res) => {
+      const service = req.body;
+      const result = await servicesCollection.insertOne(service);
       res.send(result);
     });
 
