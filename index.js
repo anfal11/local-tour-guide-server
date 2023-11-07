@@ -9,7 +9,7 @@ app.use(cors());
 
 // DB URI
 const uri =
-  "mongodb+srv://ratulcse1:QEdnpEF6Uh1JsXKn@cluster0.ey8cr7h.mongodb.net/localTourGuide?retryWrites=true&w=majority";
+  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ey8cr7h.mongodb.net/localTourGuide?retryWrites=true&w=majority`;
 
 // Mongodb CONNECTION
 const client = new MongoClient(uri, {
@@ -74,7 +74,7 @@ async function run() {
 }
 run().catch(console.dir);
 
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 app.get("/", (req, res) => {
   res.send("Local tour and guide server is running...");
