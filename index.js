@@ -1,13 +1,44 @@
 const express = require("express");
-const cors = require("cors");
 require('dotenv').config()
+const cors = require("cors")
+// const jwt = require("jsonwebtoken")
+// const cookirParser = require("cookie-parser")
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 
 // parsers
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:5173" , "http://localhost:5174"],
+  credentials: true,
+}));
+// app.use(cookirParser())
 
+//middlewares
+// const logger = async (req, res, next) => {
+//   next();
+// }
+
+
+// const jwtSecret = process.env.ACCESS_TOKEN_SECRET
+
+// const verifyToken = async (req, res, next) => {
+//   const token = req.cookies?.token;
+//   if(!token) {
+//     return res.status(401).send('Unauthorized access')
+//   }
+  
+//    jwt.verify(token, jwtSecret, (error, decoded) => {
+//     if(error) {
+//       return res.status(403).send({
+//         message: 'Forbidden access',
+//       })
+//     }
+//     req.decoded = decoded
+//     next();
+//    })
+//   }
+    
 // DB URI
 const uri =
   `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ey8cr7h.mongodb.net/localTourGuide?retryWrites=true&w=majority`;
@@ -33,6 +64,31 @@ async function run() {
     const bookingCollection = client
       .db("localTourGuide")
       .collection("bookings");
+
+      // verify token and grant access
+      const gateman = (req, res) => {
+          const token = req.cookies
+      }
+
+      // auth related apis
+      // app.post('/api/v1/auth/access-token', (req, res) => {
+      //   const user = req.body
+      //   const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+      //     expiresIn: '1h',
+      //   })
+      //   res
+      //     .cookie('token', {
+      //       httpOnly: true,
+      //       secure: true,
+      //       sameSite: 'none',
+      //     })
+      //     .send({ status: true })
+      // })
+      
+      // app.post('/logout', async (req, res) => {
+      //   const user = req.body
+      //   res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+      // })
 
     // services
     app.get("/api/v1/services", async (req, res) => {
@@ -90,18 +146,51 @@ async function run() {
     });
 
     // bookings
-    app.post("/api/v1/user/create-bookings", async (req, res) => {
+    app.get("/api/v1/create-bookings",  async (req, res) => {
+      const cursor = bookingCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.post("/api/v1/create-bookings", async (req, res) => {
       const booking = req.body;
       const result = await bookingCollection.insertOne(booking);
       res.send(result);
     });
 
-    app.delete("/api/v1/user/delete-bookings/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await bookingCollection.deleteOne(query);
+    app.delete("/api/v1/services/:serviceName", async (req, res) => {
+      const serviceName= req.params.serviceName;
+      const query = { serviceName: serviceName};
+      const result = await servicesCollection.deleteOne(query);
       res.send(result);
     });
+
+    // Back-End Logic for fetching bookings by other users
+app.get('/api/v1/create-bookings', async (req, res) => {
+  const { userEmail, status } = req.query; 
+
+  try {
+    const query = {};
+
+    // If userEmail is provided, filter bookings for a specific user
+    if (userEmail) {
+      query.userEmail = userEmail;
+    }
+
+    if (status) {
+      query.status = status;
+    }
+
+    // Find bookings that match the query
+    const bookings = await bookingCollection.find(query).toArray();
+
+    res.send(bookings);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
