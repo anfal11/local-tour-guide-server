@@ -47,6 +47,31 @@ async function run() {
       res.send(result);
     });
 
+    // update service by id
+    app.put("/api/v1/update-services/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedService = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name: updatedService.name,
+          type: updatedService.type,
+          brand: updatedService.brand,
+          price: updatedService.price,
+          description: updatedService.description,
+          rating: updatedService.rating,
+          image: updatedService.image,
+        },
+      };
+      const result = await servicesCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+
     // single service by service name
     app.get("/api/v1/services/:serviceName", async (req, res) => {
         const serviceName = req.params.serviceName;
