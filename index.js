@@ -48,20 +48,29 @@ async function run() {
     });
 
     // update service by id
-    app.put("/api/v1/update-services/:id", async (req, res) => {
-      const id = req.params.id;
+
+    app.get("/api/v1/update-services/:serviceName", async (req, res) => {
+      const serviceName = req.params.serviceName;
+        const query = { serviceName: serviceName };
+        const result = await servicesCollection.findOne(query);
+        res.send(result);
+    });
+
+    app.put("/api/v1/services/:serviceName", async (req, res) => {
+      const serviceName = req.params.serviceName;
       const updatedService = req.body;
-      const filter = { _id: new ObjectId(id) };
+      const filter = { serviceName: serviceName };
       const options = { upsert: true };
       const updateDoc = {
         $set: {
+          serviceImage: updatedService.serviceImage,
+          serviceName: updatedService.serviceName,
+          serviceDescription: updatedService.serviceDescription,
+          servicePrice: updatedService.servicePrice,
           name: updatedService.name,
-          type: updatedService.type,
-          brand: updatedService.brand,
-          price: updatedService.price,
-          description: updatedService.description,
-          rating: updatedService.rating,
+          email: updatedService.email,
           image: updatedService.image,
+          aboutProvider: updatedService.aboutProvider,
         },
       };
       const result = await servicesCollection.updateOne(
