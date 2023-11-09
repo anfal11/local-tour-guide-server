@@ -92,12 +92,7 @@ async function run() {
 
     // services
     // app.get("/api/v1/services", async (req, res) => {
-    //   const filter = req.query;
-    //   console.log(filter);
-    //   const query = {
-    //     serviceName: { $regex: filter.search, $options: "i"},
-    //   }
-    //   const cursor = servicesCollection.find(query);
+    //   const cursor = servicesCollection.find();
     //   const result = await cursor.toArray();
     //   res.send(result);
     // });
