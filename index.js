@@ -1,15 +1,15 @@
 const express = require("express");
-require('dotenv').config()
 const cors = require("cors")
 // const jwt = require("jsonwebtoken")
 // const cookirParser = require("cookie-parser")
+require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 
 // parsers
 app.use(express.json());
 app.use(cors({
-  origin: ["http://localhost:5173" , "http://localhost:5174"],
+  origin: ["https://local-tours-guide-client.vercel.app" ,  "http://localhost:5173"],
   credentials: true,
 }));
 // app.use(cookirParser())
@@ -55,7 +55,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     // connect collection
     const servicesCollection = client
@@ -66,9 +66,9 @@ async function run() {
       .collection("bookings");
 
       // verify token and grant access
-      const gateman = (req, res) => {
-          const token = req.cookies
-      }
+      // const gateman = (req, res) => {
+      //     const token = req.cookies
+      // }
 
       // auth related apis
       // app.post('/api/v1/auth/access-token', (req, res) => {
@@ -91,12 +91,27 @@ async function run() {
       // })
 
     // services
+    // app.get("/api/v1/services", async (req, res) => {
+    //   const filter = req.query;
+    //   console.log(filter);
+    //   const query = {
+    //     serviceName: { $regex: filter.search, $options: "i"},
+    //   }
+    //   const cursor = servicesCollection.find(query);
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // });
     app.get("/api/v1/services", async (req, res) => {
-      const cursor = servicesCollection.find();
+      const filter = req.query;
+      console.log(filter); 
+      const query = {
+        serviceName: { $regex: filter.search, $options: "i" },
+      }
+      const cursor = servicesCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
-
+    
     app.post("/api/v1/services", async (req, res) => {
       const service = req.body;
       const result = await servicesCollection.insertOne(service);
