@@ -98,7 +98,7 @@ async function run() {
     // });
     app.get("/api/v1/services", async (req, res) => {
       const filter = req.query;
-      console.log(filter); 
+      // console.log(filter); 
       const query = {
         serviceName: { $regex: filter.search, $options: "i" },
       }
