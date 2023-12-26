@@ -66,7 +66,7 @@ async function run() {
     const bookingCollection = client
       .db("localTourGuide")
       .collection("bookings");
-
+    const reviewCollection = client.db("localTourGuide").collection("review");
       // verify token and grant access
       // const gateman = (req, res) => {
       //     const token = req.cookies
@@ -228,6 +228,19 @@ app.get('/api/v1/create-bookings', async (req, res) => {
     console.error('Error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// user review
+app.get("/api/v1/review",  async (req, res) => {
+  const cursor = reviewCollection.find();
+  const result = await cursor.toArray();
+  res.send(result);
+});
+
+app.post("/api/v1/review", async (req, res) => {
+  const review = req.body;
+  const result = await reviewCollection.insertOne(review);
+  res.send(result);
 });
 
 
