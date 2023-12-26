@@ -8,10 +8,12 @@ const app = express();
 
 // parsers
 app.use(express.json());
-app.use(cors({
+app.use(cors(
+  {
   origin: ["https://local-tours-guide-client.vercel.app" ,  "http://localhost:5173"],
   credentials: true,
-}));
+}
+));
 // app.use(cookirParser())
 
 //middlewares
@@ -55,7 +57,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
 
     // connect collection
     const servicesCollection = client
@@ -96,11 +98,16 @@ async function run() {
     //   const result = await cursor.toArray();
     //   res.send(result);
     // });
+
+    
     app.get("/api/v1/services", async (req, res) => {
       const filter = req.query;
       // console.log(filter); 
       const query = {
-        serviceName: { $regex: filter.search, $options: "i" },
+        serviceName: {  
+        $regex: filter.search && typeof filter.search === 'string' ? filter.search : "",
+        $options: "i" 
+      },
       }
       const cursor = servicesCollection.find(query);
       const result = await cursor.toArray();
@@ -111,6 +118,28 @@ async function run() {
       const service = req.body;
       const result = await servicesCollection.insertOne(service);
       res.send(result);
+    });
+
+    app.put("/api/v1/services/increment-views/:serviceId", async (req, res) => {
+      const serviceId = req.params.serviceId;
+    
+      try {
+        // Find the service by ID and increment the views
+        const result = await servicesCollection.updateOne(
+          { _id: new ObjectId(serviceId) },
+          { $inc: { views: 1 } }
+        );
+    
+        console.log("Result:", result);
+        if (result.matchedCount > 0) {
+          res.send(result);
+        } else {
+          res.status(404).json({ success: false, message: "Service not found" });
+        }
+      } catch (error) {
+        console.error("Error incrementing views:", error);
+        res.status(500).json({ success: false, error: "Internal server error" });
+      }
     });
 
     // update service by id
